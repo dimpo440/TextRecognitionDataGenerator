@@ -44,6 +44,7 @@ class GeneratorFromStrings:
         stroke_fill: str = "#282828",
         image_mode: str = "RGB",
         output_bboxes: int = 0,
+        yolo_classes: dict = {},
         rtl: bool = False,
     ):
         self.count = count
@@ -85,6 +86,7 @@ class GeneratorFromStrings:
         self.word_split = word_split
         self.image_dir = image_dir
         self.output_bboxes = output_bboxes
+        self.yolo_classes = yolo_classes
         self.generated_count = 0
         self.stroke_width = stroke_width
         self.stroke_fill = stroke_fill
@@ -105,9 +107,9 @@ class GeneratorFromStrings:
                 self.generated_count,
                 self.strings[(self.generated_count - 1) % len(self.strings)],
                 self.fonts[(self.generated_count - 1) % len(self.fonts)],
-                None,
+                'generated',
                 self.size,
-                None,
+                'jpg',
                 self.skewing_angle,
                 self.random_skew,
                 self.blur,
@@ -132,6 +134,7 @@ class GeneratorFromStrings:
                 self.stroke_fill,
                 self.image_mode,
                 self.output_bboxes,
+                self.yolo_classes,
             ),
             self.orig_strings[(self.generated_count - 1) % len(self.orig_strings)]
             if self.rtl

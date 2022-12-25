@@ -1,5 +1,6 @@
 import os
 import random as rnd
+import numpy as np
 
 from PIL import Image, ImageFilter, ImageStat
 
@@ -10,6 +11,15 @@ try:
     from trdg import handwritten_text_generator
 except ImportError as e:
     print("Missing modules for handwritten text generation.")
+
+
+def to_yolo(box, img_w=1280, img_h=720):
+    w = box[2]-box[0]
+    h = box[3]-box[1]
+    xc = box[0] + int(np.round(w / 2))
+    yc = box[1] + int(np.round(h / 2))
+
+    return [xc / img_w, yc / img_h, w / img_w, h / img_h]
 
 
 class FakeTextDataGenerator(object):
@@ -54,6 +64,7 @@ class FakeTextDataGenerator(object):
         stroke_fill: str = "#282828",
         image_mode: str = "RGB",
         output_bboxes: int = 0,
+        yolo_classes: dict = {},
     ) -> Image:
         image = None
 
@@ -257,6 +268,8 @@ class FakeTextDataGenerator(object):
             name = "{}_{}".format(str(index), text)
         elif name_format == 2:
             name = str(index)
+        elif name_format == 3:
+            name = "{}_{}_{}".format(str(index), os.path.splitext(os.path.split(font)[1])[0], text)
         else:
             print("{} is not a valid name format. Using default.".format(name_format))
             name = "{}_{}".format(text, str(index))
@@ -266,6 +279,7 @@ class FakeTextDataGenerator(object):
         mask_name = "{}_mask.png".format(name)
         box_name = "{}_boxes.txt".format(name)
         tess_box_name = "{}.box".format(name)
+        yolo_box_name = "{}.txt".format(name)
 
         # Save the image
         if out_dir is not None:
@@ -283,6 +297,15 @@ class FakeTextDataGenerator(object):
                     for bbox, char in zip(bboxes, text):
                         f.write(
                             " ".join([char] + [str(v) for v in bbox] + ["0"]) + "\n"
+                        )
+            if output_bboxes == 3:
+                bboxes = mask_to_bboxes(final_mask, tess=True)
+                with open(os.path.join(out_dir, yolo_box_name), "w") as f:
+                    for bbox, char in zip(bboxes, text):
+                        f.write(
+                            " ".join([str(yolo_classes[char])] +
+                                     [str(v) for v in to_yolo(bbox, img_w=background_width, img_h=background_height)]) +
+                            "\n"
                         )
         else:
             if output_mask == 1:

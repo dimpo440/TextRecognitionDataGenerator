@@ -93,6 +93,20 @@ def parse_arguments():
         default=False,
     )
     parser.add_argument(
+        "-chrs",
+        "--chars",
+        action="store_true",
+        help="Define what symbols random sequences should contain. Only works with -rs",
+        default=None,
+    )
+    parser.add_argument(
+        "-sgn",
+        "--sign",
+        action="store_true",
+        help="Define if random sequences should be vechile signs. Only works with -rs",
+        default=False,
+    )
+    parser.add_argument(
         "-w",
         "--length",
         type=int,
@@ -200,8 +214,15 @@ def parse_arguments():
         "-obb",
         "--output_bboxes",
         type=int,
-        help="Define if the generator will return bounding boxes for the text, 1: Bounding box file, 2: Tesseract format",
+        help="Define if the generator will return bounding boxes for the text, 1: Bounding box file, 2: Tesseract format, 3: Yolo",
         default=0,
+    )
+    parser.add_argument(
+        "-ydct",
+        "--yolo_class_dictionary",
+        type=dict,
+        help="Define classes numbers-names for Yolo",
+        default={},
     )
     parser.add_argument(
         "-d",
@@ -403,6 +424,8 @@ def main():
             args.include_numbers,
             args.include_symbols,
             args.language,
+            args.sign,
+            args.chars,
         )
         # Set a name format compatible with special characters automatically if they are used
         if args.include_symbols or True not in (
@@ -469,6 +492,7 @@ def main():
                 [args.stroke_fill] * string_count,
                 [args.image_mode] * string_count,
                 [args.output_bboxes] * string_count,
+                [args.yolo_classes_dictionary] * string_count,
             ),
         ),
         total=args.count,

@@ -79,6 +79,8 @@ def create_strings_randomly(
     let: bool,
     num: bool,
     sym: bool,
+    sign: bool,
+    chars: str,
     lang: str,
 ) -> List[str]:
     """
@@ -86,7 +88,7 @@ def create_strings_randomly(
     """
 
     # If none specified, use all three
-    if True not in (let, num, sym):
+    if True not in (let, num, sym, sign, chars):
         let, num, sym = True, True, True
 
     pool = ""
@@ -118,6 +120,8 @@ def create_strings_randomly(
         pool += "0123456789"
     if sym:
         pool += "!\"#$%&'()*+,-./:;?@[\\]^_`{|}~"
+    if chars:
+        pool = ''.join(chars)
 
     if lang == "cn":
         min_seq_len = 1
@@ -125,16 +129,33 @@ def create_strings_randomly(
     elif lang == "ja":
         min_seq_len = 1
         max_seq_len = 2
+    elif chars:
+        min_seq_len = 17
+        max_seq_len = 17
     else:
         min_seq_len = 2
         max_seq_len = 10
 
     strings = []
-    for _ in range(0, count):
-        current_string = ""
-        for _ in range(0, rnd.randint(1, length) if allow_variable else length):
-            seq_len = rnd.randint(min_seq_len, max_seq_len)
-            current_string += "".join([rnd.choice(pool) for _ in range(seq_len)])
-            current_string += " "
-        strings.append(current_string[:-1])
+    if sign:
+        pool_num = "0123456789"
+        pool_char = "АВЕКМНОРСТУХ"
+        for _ in range(0, count):
+            scheme = [(1, 'c'), (3, 'n'), (2, 'c'), (rnd.choice([2,3]), 'n')]
+            current_string = ''
+            for n, pool_type in scheme:
+                if pool_type == 'n':
+                    pool = pool_num
+                else:
+                    pool = pool_char
+                current_string += "".join([rnd.choice(pool) for _ in range(n)])
+            strings.append(current_string[:-1])
+    else:
+        for _ in range(0, count):
+            current_string = ""
+            for _ in range(0, rnd.randint(1, length) if allow_variable else length):
+                seq_len = rnd.randint(min_seq_len, max_seq_len)
+                current_string += "".join([rnd.choice(pool) for _ in range(seq_len)])
+                current_string += " "
+            strings.append(current_string[:-1])
     return strings
