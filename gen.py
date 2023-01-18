@@ -109,7 +109,7 @@ def gen_vins(fonts = []):
                                 )
 
 if __name__ == '__main__':
-    fonts = load_fonts('ru')
+    fonts = load_fonts('en')
     for i, font in enumerate(fonts):
         FakeTextDataGenerator.generate(
             index=i,
